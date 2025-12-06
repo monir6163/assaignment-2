@@ -7,7 +7,7 @@ import { jwtHelpers } from "../../../helper/jwtHelpers";
 import ApiError from "../../errors/ApiError";
 import { ISignupUser } from "./auth.interface";
 
-const signupUser = async (payload: ISignupUser) => {
+const signUpUser = async (payload: ISignupUser) => {
   const { name, email, password, phone } = payload;
   const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
@@ -24,7 +24,7 @@ const signupUser = async (payload: ISignupUser) => {
   delete withoutPasswordUser.password;
   return withoutPasswordUser as ISignupUser;
 };
-const loginUser = async (payload: { email: string; password: string }) => {
+const signInUser = async (payload: { email: string; password: string }) => {
   const { email, password } = payload;
   const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
@@ -57,6 +57,6 @@ const loginUser = async (payload: { email: string; password: string }) => {
 };
 
 export const AuthServices = {
-  signupUser,
-  loginUser,
+  signUpUser,
+  signInUser,
 };

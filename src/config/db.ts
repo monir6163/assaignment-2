@@ -40,5 +40,15 @@ const connectDB = async () => {
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`);
+  // create user_sessions table if not exists
+  // await pool.query(`CREATE TABLE IF NOT EXISTS user_sessions (
+  //     id SERIAL PRIMARY KEY,
+  //     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  //     refresh_token TEXT NOT NULL,
+  //     user_agent TEXT,
+  //     ip_address VARCHAR(50),
+  //     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  //     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  //   )`);
 };
 export default connectDB;

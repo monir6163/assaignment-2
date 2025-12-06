@@ -12,7 +12,7 @@ const auth = (...roles: string[]) => {
     next: NextFunction
   ) => {
     try {
-      const token = req.headers.authorization;
+      const token = req.headers.authorization?.split(" ")[1];
 
       if (!token) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
@@ -26,7 +26,7 @@ const auth = (...roles: string[]) => {
       req.user = verifiedUser;
 
       if (roles.length && !roles.includes(verifiedUser.role)) {
-        throw new ApiError(StatusCodes.FORBIDDEN, "Forbidden!");
+        throw new ApiError(StatusCodes.FORBIDDEN, "Forbidden! Access Denied");
       }
       next();
     } catch (err) {

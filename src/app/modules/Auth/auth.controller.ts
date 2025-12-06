@@ -4,8 +4,8 @@ import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import { AuthServices } from "./auth.service";
 
-const signupUser = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthServices.signupUser(req.body);
+const signUpUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.signUpUser(req.body);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
     success: true,
@@ -14,8 +14,8 @@ const signupUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const loginUser = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthServices.loginUser(req.body);
+const signInUser = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthServices.signInUser(req.body);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
@@ -26,6 +26,6 @@ const loginUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthController = {
-  signupUser,
-  loginUser,
+  signUpUser,
+  signInUser,
 };
