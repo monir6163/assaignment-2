@@ -47,7 +47,7 @@ const updateUserById = async (userId: number, updateData: Partial<IUser>) => {
 
 const deleteUserById = async (userId: number) => {
   const queryText = `DELETE FROM users WHERE id = $1 RETURNING *`;
-  const checkBookingsQuery = `SELECT COUNT(*) FROM bookings WHERE user_id = $1 AND status = 'active'`;
+  const checkBookingsQuery = `SELECT COUNT(*) FROM bookings WHERE customer_id = $1 AND status = 'active'`;
   const bookingsResult = await pool.query(checkBookingsQuery, [userId]);
   if (parseInt(bookingsResult.rows[0].count, 10) > 0) {
     throw new ApiError(400, "Cannot delete user with active bookings");

@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import { StatusCodes } from "http-status-codes";
 import globalErrorHandler from "./app/middleware/GlobalErrorHandler";
+import logger from "./app/middleware/Logger";
 import notFound from "./app/middleware/NotFound";
 import routes from "./app/routes";
 import sendResponse from "./shared/sendResponse";
@@ -10,7 +11,8 @@ const app: Application = express();
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
-// health check
+app.use(logger);
+
 app.get("/", (req, res) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   sendResponse(res, {
@@ -29,12 +31,10 @@ app.get("/", (req, res) => {
   res.end();
 });
 
-// use routes
 app.use("/api/v1", routes);
 
-// global Error
 app.use(globalErrorHandler);
-// handle not found
+
 app.use(notFound);
 
 export default app;
