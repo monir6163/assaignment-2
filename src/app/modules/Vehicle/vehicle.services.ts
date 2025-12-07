@@ -1,4 +1,6 @@
+import { StatusCodes } from "http-status-codes";
 import { pool } from "../../../config/db";
+import ApiError from "../../errors/ApiError";
 import { IVehicle } from "./vehicle.interface";
 
 const createVehicle = async (payload: IVehicle) => {
@@ -38,7 +40,7 @@ const updateVehicle = async (
   );
 
   if (existingVehicle.rows.length === 0) {
-    return null;
+    throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");
   }
 
   const updatedVehicle: IVehicle = {
@@ -71,7 +73,7 @@ const deleteVehicle = async (vehicleId: number): Promise<IVehicle | null> => {
     [vehicleId]
   );
   if (existingVehicle.rows.length === 0) {
-    return null;
+    throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");
   }
   const queryText = `DELETE FROM vehicles WHERE id = $1 RETURNING *`;
   const values = [vehicleId];

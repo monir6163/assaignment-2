@@ -7,7 +7,7 @@ import { VehicleZodSchema } from "./vehicle.validation";
 const router = express.Router();
 
 router.post(
-  "/create",
+  "/",
   auth("admin"),
   validateRequest(VehicleZodSchema.createVehicleZodSchema),
   VehicleController.createVehicle
