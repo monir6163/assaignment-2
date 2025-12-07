@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/", auth("admin"), UsersController.getAllUsers);
 router.get(
-  "/:regNumber",
+  "/:email",
   auth("admin"),
   UsersController.getUserByRegistationNumber
 );

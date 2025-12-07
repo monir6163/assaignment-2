@@ -8,9 +8,9 @@ const getAllUsers = async () => {
   const result = await pool.query(queryText);
   return result.rows as IUser[];
 };
-const getUserByRegistationNumber = async (registrationNumber: string) => {
-  const queryText = `SELECT id, name, email, role, phone, created_at, updated_at FROM users WHERE registration_number = $1`;
-  const result = await pool.query(queryText, [registrationNumber]);
+const getUserByRegistationNumber = async (email: string) => {
+  const queryText = `SELECT id, name, email, role, phone, created_at, updated_at FROM users WHERE email = $1`;
+  const result = await pool.query(queryText, [email]);
   return result.rows[0] as IUser | null;
 };
 

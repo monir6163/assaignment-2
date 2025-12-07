@@ -18,10 +18,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 
 const getUserByRegistationNumber = catchAsync(
   async (req: Request, res: Response) => {
-    const registrationNumber = req.params.regNumber as string;
-    const result = await UserServices.getUserByRegistationNumber(
-      registrationNumber
-    );
+    const email = req.params.email as string;
+    const result = await UserServices.getUserByRegistationNumber(email);
     sendResponse<IUser | null>(res, {
       statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
       success: true,
