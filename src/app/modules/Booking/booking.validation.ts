@@ -19,4 +19,12 @@ export const BookingSchema = {
       status: z.string().min(1, "Status is required"),
     }),
   }),
+  updateStatus: z.object({
+    params: z.object({
+      bookingId: z.coerce.number().min(1, "Booking ID is required"),
+    }),
+    body: z.object({
+      status: z.enum(["cancelled", "returned"]),
+    }),
+  }),
 };

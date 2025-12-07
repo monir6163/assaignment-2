@@ -162,7 +162,48 @@ const updateBookingStatus = catchAsync(
         statusCode: StatusCodes.OK,
         success: true,
         message: "Booking cancelled successfully.",
-        data: updatedBooking,
+        data: {
+          id: updatedBooking.id,
+          customer_id: updatedBooking.customer_id,
+          vehicle_id: updatedBooking.vehicle_id,
+          rent_start_date: updatedBooking.rent_start_date,
+          rent_end_date: updatedBooking.rent_end_date,
+          total_price: Number(updatedBooking.total_price),
+          status: updatedBooking.status,
+        },
+      });
+    } else if (status === "returned" && loggedInUser?.role === "admin") {
+      const updatedBooking = await BookingServices.updateBookingStatus(
+        bookingId,
+        status
+      );
+      await BookingServices.updateVehicleAvailability(
+        getExistingBooking.vehicle_id,
+        "available"
+      );
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Booking returned successfully.",
+        data: {
+          id: updatedBooking.id,
+          customer_id: updatedBooking.customer_id,
+          vehicle_id: updatedBooking.vehicle_id,
+          rent_start_date: updatedBooking.rent_start_date,
+          rent_end_date: updatedBooking.rent_end_date,
+          total_price: Number(updatedBooking.total_price),
+          status: updatedBooking.status,
+          vehicle: {
+            availability_status: updatedBooking.availability_status,
+          },
+        },
+      });
+    } else {
+      sendResponse(res, {
+        statusCode: StatusCodes.FORBIDDEN,
+        success: false,
+        message: "You do not have permission to update this booking status.",
+        data: null,
       });
     }
   }

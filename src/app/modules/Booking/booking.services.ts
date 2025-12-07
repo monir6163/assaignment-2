@@ -28,7 +28,6 @@ const createBooking = async (
   await pool.query(updateVehicleQuery, [bookingData.vehicle_id]);
   return result.rows[0];
 };
-
 const adminGetAllBookings = async () => {
   const queryText = `
     SELECT 
@@ -85,7 +84,6 @@ const customerGetAllBookings = async (customerId: number) => {
     },
   }));
 };
-
 const getCustomerById = async (customerId: number) => {
   const queryText =
     "SELECT id, name, email, role, phone FROM users WHERE id = $1";
@@ -121,7 +119,6 @@ const updateVehicleAvailability = async (
   const result = await pool.query(queryText, values);
   return result.rows[0];
 };
-
 const updateBookingStatus = async (
   bookingId: number,
   status: "cancelled" | "returned"
@@ -136,6 +133,32 @@ const updateBookingStatus = async (
   const result = await pool.query(queryText, values);
   return result.rows[0];
 };
+const bookingsAutoReturnForExpired = async () => {
+  const expiredBookingsQueryText = `
+    SELECT id, vehicle_id FROM bookings
+    WHERE status = 'active' AND rent_end_date < NOW()
+  `;
+  const expiredBookingsResult = await pool.query(expiredBookingsQueryText);
+  const expiredBookings = expiredBookingsResult.rows;
+  if (expiredBookings.length === 0) {
+    return;
+  }
+  for (const booking of expiredBookings) {
+    const updateBookingQueryText = `
+      UPDATE bookings
+      SET status = 'returned', updated_at = NOW()
+      WHERE id = $1
+    `;
+    await pool.query(updateBookingQueryText, [booking.id]);
+    const updateVehicleQueryText = `
+      UPDATE vehicles
+      SET availability_status = 'available', updated_at = NOW()
+      WHERE id = $1
+    `;
+    await pool.query(updateVehicleQueryText, [booking.vehicle_id]);
+  }
+  return;
+};
 
 export const BookingServices = {
   createBooking,
@@ -146,4 +169,5 @@ export const BookingServices = {
   getBookingById,
   updateBookingStatus,
   updateVehicleAvailability,
+  bookingsAutoReturnForExpired,
 };

@@ -10,6 +10,7 @@ export default {
     ? Number(process.env.BCRYPT_SALT_ROUNDS)
     : 10,
   database_url: process.env.DATABASE_URL,
+  cron_job_secret: process.env.CRON_JOB_SECRET,
   jwt: {
     secret_token: process.env.JWT_SECKRET_TOKEN,
     secret_expires: process.env.JWT_EXPIRE_IN,
