@@ -3,5 +3,5 @@ export type IVehicle = {
   type: string;
   registration_number: string;
   daily_rent_price: number;
-  availability_status: string;
+  availability_status: "available" | "booked";
 };

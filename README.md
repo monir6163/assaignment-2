@@ -2,6 +2,15 @@
 
 This Project Provides Complete solution for managing vehicle rentals, user accounts, bookings, and role-based authentication and A robust RESTFUL API backend built with Node.js, TypeScript, Express.js, and PostgreSQL.
 
+## Credentials for Testing
+
+- Admin User:
+  - Email: admin@admin.com
+  - Password: adminpassword
+- Customer User:
+  - Email: jony@customer.com
+  - Password: customerpassword1
+
 # Live Link
 
 [Live API](https://vehicle-rental-system-api.vercel.app)

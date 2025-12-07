@@ -75,6 +75,14 @@ const deleteVehicle = async (vehicleId: number): Promise<IVehicle | null> => {
   if (existingVehicle.rows.length === 0) {
     throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");
   }
+  const checkBookingsQuery = `SELECT COUNT(*) FROM bookings WHERE vehicle_id = $1 AND status = 'active'`;
+  const bookingsResult = await pool.query(checkBookingsQuery, [vehicleId]);
+  if (parseInt(bookingsResult.rows[0].count, 10) > 0) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Cannot delete vehicle with active bookings"
+    );
+  }
   const queryText = `DELETE FROM vehicles WHERE id = $1 RETURNING *`;
   const values = [vehicleId];
   const result = await pool.query(queryText, values);

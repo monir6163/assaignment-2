@@ -44,6 +44,14 @@ const updateUserById = catchAsync(
         data: null,
       });
     }
+    if (loggedInUser.role !== "admin" && "role" in updateData) {
+      return sendResponse(res, {
+        statusCode: StatusCodes.FORBIDDEN,
+        success: false,
+        message: "Forbidden! You cannot update your own role.",
+        data: null,
+      });
+    }
     if (loggedInUser?.role !== "admin" && req.body.role) {
       delete req.body.role;
     }
