@@ -16,8 +16,53 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getUserByRegistationNumber = catchAsync(
+  async (req: Request, res: Response) => {
+    const registrationNumber = req.params.regNumber as string;
+    const result = await UserServices.getUserByRegistationNumber(
+      registrationNumber
+    );
+    sendResponse<IUser | null>(res, {
+      statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+      success: true,
+      message: result
+        ? "User retrieved successfully"
+        : "User not found with the provided registration number",
+      data: result,
+    });
+  }
+);
+
+const updateUserById = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const userId = Number(req.params.userId);
+    const updateData = req.body;
+    const loggedInUser = req.user as IUser;
+    if (loggedInUser?.role !== "admin" && loggedInUser?.id !== userId) {
+      return sendResponse<IUser | null>(res, {
+        statusCode: StatusCodes.FORBIDDEN,
+        success: false,
+        message: "Forbidden! You can only update your own profile.",
+        data: null,
+      });
+    }
+    if (loggedInUser?.role !== "admin" && req.body.role) {
+      delete req.body.role;
+    }
+    const result = await UserServices.updateUserById(userId, updateData);
+    sendResponse<IUser | null>(res, {
+      statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+      success: true,
+      message: result
+        ? "User updated successfully"
+        : "User not found with the provided ID",
+      data: result,
+    });
+  }
+);
+
 const deleteUserById = catchAsync(async (req: Request, res: Response) => {
-  const userId = Number(req.params.id);
+  const userId = Number(req.params.userId);
   const result = await UserServices.deleteUserById(userId);
   sendResponse<IUser | null>(res, {
     statusCode: StatusCodes.OK,
@@ -31,5 +76,7 @@ const deleteUserById = catchAsync(async (req: Request, res: Response) => {
 
 export const UsersController = {
   getAllUsers,
+  getUserByRegistationNumber,
+  updateUserById,
   deleteUserById,
 };

@@ -41,6 +41,7 @@ const signInUser = async (payload: { email: string; password: string }) => {
   }
   const accessToken = jwtHelpers.generateToken(
     {
+      id: userExists.rows[0].id,
       email: userExists.rows[0].email,
       role: userExists.rows[0].role,
     },
