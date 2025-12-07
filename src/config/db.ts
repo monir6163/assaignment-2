@@ -23,7 +23,7 @@ const connectDB = async () => {
       vehicle_name VARCHAR(255) NOT NULL,
       type VARCHAR(20) NOT NULL CHECK(type IN('car','bike','van','SUV')),
       registration_number VARCHAR(255) UNIQUE NOT NULL,
-      daily_rent_price INT NOT NULL CHECK(daily_rent_price>0),
+      daily_rent_price DECIMAL(10, 2) NOT NULL CHECK(daily_rent_price > 0),
       availability_status VARCHAR(20) NOT NULL CHECK(availability_status IN('available','booked')),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -31,11 +31,11 @@ const connectDB = async () => {
   // create bookings table if not exists
   await pool.query(`CREATE TABLE IF NOT EXISTS bookings (
     id SERIAL PRIMARY KEY,
-    customer_id INT NOT NULL REFERENCES users(id) ON DELETE SET NULL,
-    vehicle_id INT NOT NULL REFERENCES vehicles(id) ON DELETE SET NULL,
+    customer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vehicle_id INT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
     rent_start_date DATE NOT NULL,
     rent_end_date DATE NOT NULL CHECK(rent_end_date > rent_start_date),
-    total_price INT NOT NULL CHECK(total_price>0),
+    total_price DECIMAL(10, 2) NOT NULL CHECK (total_price > 0),
     status VARCHAR(20) NOT NULL CHECK(status IN ('active','cancelled','returned')),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

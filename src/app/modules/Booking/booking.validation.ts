@@ -1,14 +1,22 @@
 import z from "zod";
 export const BookingSchema = {
   create: z.object({
-    customer_id: z.number().int().positive(),
-    vehicle_id: z.number().int().positive(),
-    rent_start_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
-      message: "Invalid date format for rent_start_date",
+    body: z.object({
+      customer_id: z.number().min(1, "Customer ID is required"),
+      vehicle_id: z.number().min(1, "Vehicle ID is required"),
+      rent_start_date: z
+        .string()
+        .refine(
+          (date) => !isNaN(Date.parse(date)),
+          "rent_start_date must be a valid date string"
+        ),
+      rent_end_date: z
+        .string()
+        .refine(
+          (date) => !isNaN(Date.parse(date)),
+          "rent_end_date must be a valid date string"
+        ),
+      status: z.string().min(1, "Status is required"),
     }),
-    rent_end_date: z.string().refine((date) => !isNaN(Date.parse(date)), {
-      message: "Invalid date format for rent_end_date",
-    }),
-    status: z.enum(["active", "cancelled", "returned"]),
   }),
 };
