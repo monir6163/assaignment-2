@@ -11,9 +11,13 @@ This Project Provides Complete solution for managing vehicle rentals, user accou
   - Email: jony@customer.com
   - Password: customerpassword1
 
-# Live Link
+## Live Link
 
-[Live API](https://vehicle-rental-system-api.vercel.app)
+[Live API](https://assaignment-2-nu.vercel.app)
+
+## API Prefix
+
+`/api/v1`
 
 ## ⭐ Project Overview
 
