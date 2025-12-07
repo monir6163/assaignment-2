@@ -115,8 +115,61 @@ const getAllBookings = catchAsync(
     }
   }
 );
+const updateBookingStatus = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const loggedInUser = req.user;
+    const bookingId = Number(req.params.bookingId);
+    const { status } = req.body;
+    const getExistingBooking = await BookingServices.getBookingById(bookingId);
+    if (!getExistingBooking) {
+      sendResponse(res, {
+        statusCode: StatusCodes.NOT_FOUND,
+        success: false,
+        message: "Booking not found with the provided bookingId.",
+        data: null,
+      });
+      return;
+    }
+    if (status === "cancelled" && loggedInUser?.role === "customer") {
+      if (getExistingBooking.customer_id !== loggedInUser.id) {
+        sendResponse(res, {
+          statusCode: StatusCodes.FORBIDDEN,
+          success: false,
+          message: "Customer can only cancel their own booking.",
+          data: null,
+        });
+        return;
+      }
+      const now = new Date();
+      if (new Date(getExistingBooking.rent_start_date) <= now) {
+        sendResponse(res, {
+          statusCode: StatusCodes.BAD_REQUEST,
+          success: false,
+          message: "Cannot cancel booking after it has started.",
+          data: null,
+        });
+        return;
+      }
+      const updatedBooking = await BookingServices.updateBookingStatus(
+        bookingId,
+        status
+      );
+      await BookingServices.updateVehicleAvailability(
+        getExistingBooking.vehicle_id,
+        "available"
+      );
+      sendResponse(res, {
+        statusCode: StatusCodes.OK,
+        success: true,
+        message: "Booking cancelled successfully.",
+        data: updatedBooking,
+      });
+    }
+  }
+);
 
 export const BookingController = {
   createBooking,
   getAllBookings,
+  updateBookingStatus,
 };

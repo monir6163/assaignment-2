@@ -100,6 +100,42 @@ const getVehicleById = async (vehicleId: number) => {
   const result = await pool.query(queryText, values);
   return result.rows[0];
 };
+const getBookingById = async (bookingId: number) => {
+  const queryText =
+    "SELECT id, customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status FROM bookings WHERE id = $1";
+  const values = [bookingId];
+  const result = await pool.query(queryText, values);
+  return result.rows[0];
+};
+const updateVehicleAvailability = async (
+  vehicleId: number,
+  availabilityStatus: "available" | "booked"
+) => {
+  const queryText = `
+    UPDATE vehicles
+    SET availability_status = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING id, vehicle_name, type, registration_number, daily_rent_price, availability_status, created_at, updated_at
+  `;
+  const values = [availabilityStatus, vehicleId];
+  const result = await pool.query(queryText, values);
+  return result.rows[0];
+};
+
+const updateBookingStatus = async (
+  bookingId: number,
+  status: "cancelled" | "returned"
+) => {
+  const queryText = `
+    UPDATE bookings
+    SET status = $1, updated_at = NOW()
+    WHERE id = $2
+    RETURNING id, customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status, created_at, updated_at
+  `;
+  const values = [status, bookingId];
+  const result = await pool.query(queryText, values);
+  return result.rows[0];
+};
 
 export const BookingServices = {
   createBooking,
@@ -107,4 +143,7 @@ export const BookingServices = {
   customerGetAllBookings,
   getCustomerById,
   getVehicleById,
+  getBookingById,
+  updateBookingStatus,
+  updateVehicleAvailability,
 };
