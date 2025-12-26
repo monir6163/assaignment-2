@@ -9,7 +9,7 @@ const signUpUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
     success: true,
-    message: "User created successfully!",
+    message: "User registered successfully",
     data: result,
   });
 });
@@ -19,7 +19,7 @@ const signInUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: "Logged in successfully!",
+    message: "Login successful",
     token: result.token,
     data: result.user,
   });

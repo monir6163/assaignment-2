@@ -15,17 +15,28 @@ const auth = (...roles: string[]) => {
       const token = req.headers.authorization?.split(" ")[1];
 
       if (!token) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "UNAUTHORIZED");
       }
-
-      const verifiedUser = jwtHelpers.verifyToken(
-        token,
-        config.jwt.secret_token as Secret
-      );
+      let verifiedUser;
+      try {
+        verifiedUser = jwtHelpers.verifyToken(
+          token,
+          config.jwt.secret_token as Secret
+        );
+      } catch (error: any) {
+        throw new ApiError(
+          StatusCodes.UNAUTHORIZED,
+          "UNAUTHORIZED",
+          error.message
+        );
+      }
+      if (!verifiedUser) {
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "UNAUTHORIZED");
+      }
 
       req.user = verifiedUser;
 
-      if (roles.length && !roles.includes(verifiedUser.role)) {
+      if (roles.length && !roles.includes(verifiedUser?.role)) {
         throw new ApiError(StatusCodes.FORBIDDEN, "Forbidden! Access Denied");
       }
       next();
