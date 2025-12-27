@@ -8,7 +8,7 @@ import ApiError from "../../errors/ApiError";
 import { ISignupUser } from "./auth.interface";
 
 const signUpUser = async (payload: ISignupUser) => {
-  const { name, email, password, phone } = payload;
+  const { name, email, password, phone, role } = payload;
   const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [
     email,
   ]);
@@ -17,8 +17,8 @@ const signUpUser = async (payload: ISignupUser) => {
   }
   const hashedPassword = await hashedPasswordHelper.hashedPassword(password);
   const result = await pool.query(
-    "INSERT INTO users (name, email, password, phone) VALUES ($1, $2, $3, $4) RETURNING *",
-    [name, email.toLowerCase(), hashedPassword, phone]
+    "INSERT INTO users (name, email, password, phone, role) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+    [name, email.toLowerCase(), hashedPassword, phone, role]
   );
   const withoutPasswordUser = { ...result.rows[0] };
   delete withoutPasswordUser.password;
