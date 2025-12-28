@@ -14,6 +14,17 @@ const createVehicle = async (payload: IVehicle) => {
     payload.daily_rent_price,
     payload.availability_status,
   ];
+  // check if vehicle with same registration number exists
+  const existingVehicle = await pool.query(
+    `SELECT * FROM vehicles WHERE registration_number = $1`,
+    [payload.registration_number]
+  );
+  if (existingVehicle.rows.length > 0) {
+    throw new ApiError(
+      StatusCodes.CONFLICT,
+      "Vehicle with this registration number already exists"
+    );
+  }
   const result = await pool.query(queryText, values);
   return result.rows[0];
 };
