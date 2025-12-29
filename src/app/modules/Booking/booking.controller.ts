@@ -7,71 +7,74 @@ import ApiError from "../../errors/ApiError";
 import { IUser } from "../User/user.interface";
 import { BookingServices } from "./booking.services";
 
-const createBooking = catchAsync(async (req: Request, res: Response) => {
-  const bookingData = req.body;
+const createBooking = catchAsync(
+  async (req: Request & { user?: IUser }, res: Response) => {
+    const bookingData = req.body;
+    console.log(req.user);
 
-  const startDate = new Date(bookingData.rent_start_date);
-  const endDate = new Date(bookingData.rent_end_date);
-  if (startDate >= endDate) {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      "Invalid date range: rent_start_date must be before rent_end_date."
+    const startDate = new Date(bookingData.rent_start_date);
+    const endDate = new Date(bookingData.rent_end_date);
+    if (startDate >= endDate) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "Invalid date range: rent_start_date must be before rent_end_date."
+      );
+    }
+    const existCustomer = await BookingServices.getCustomerById(
+      bookingData.customer_id
     );
-  }
-  const existCustomer = await BookingServices.getCustomerById(
-    bookingData.customer_id
-  );
-  if (!existCustomer) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      "Customer not found with the provided customer_id."
+    if (!existCustomer) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        "Customer not found with the provided customer_id."
+      );
+    }
+    const existVehicle = await BookingServices.getVehicleById(
+      bookingData.vehicle_id
     );
-  }
-  const existVehicle = await BookingServices.getVehicleById(
-    bookingData.vehicle_id
-  );
-  if (!existVehicle) {
-    throw new ApiError(
-      StatusCodes.NOT_FOUND,
-      "Vehicle not found with the provided vehicle_id."
+    if (!existVehicle) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        "Vehicle not found with the provided vehicle_id."
+      );
+    }
+    if (existVehicle.availability_status !== "available") {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "The selected vehicle is not available for booking."
+      );
+    }
+    const totalPriceCalculation = calculateTotalPrice(
+      bookingData.rent_start_date,
+      bookingData.rent_end_date,
+      existVehicle.daily_rent_price
     );
-  }
-  if (existVehicle.availability_status !== "available") {
-    throw new ApiError(
-      StatusCodes.BAD_REQUEST,
-      "The selected vehicle is not available for booking."
-    );
-  }
-  const totalPriceCalculation = calculateTotalPrice(
-    bookingData.rent_start_date,
-    bookingData.rent_end_date,
-    existVehicle.daily_rent_price
-  );
-  const result = await BookingServices.createBooking({
-    ...bookingData,
-    total_price: totalPriceCalculation,
-  });
-  sendResponse(res, {
-    statusCode: StatusCodes.CREATED,
-    success: true,
-    message: "Booking created successfully.",
-    data: {
-      id: result.id,
-      customer_id: result.customer_id,
-      vehicle_id: result.vehicle_id,
-      rent_start_date: bookingData.rent_start_date,
-      rent_end_date: bookingData.rent_end_date,
-      total_price: result.total_price,
-      status: result.status,
-      vehicle: {
-        vehicle_name: existVehicle.vehicle_name,
-        daily_rent_price: Number(existVehicle.daily_rent_price),
+    const result = await BookingServices.createBooking({
+      ...bookingData,
+      total_price: totalPriceCalculation,
+    });
+    sendResponse(res, {
+      statusCode: StatusCodes.CREATED,
+      success: true,
+      message: "Booking created successfully.",
+      data: {
+        id: result.id,
+        customer_id: result.customer_id,
+        vehicle_id: result.vehicle_id,
+        rent_start_date: bookingData.rent_start_date,
+        rent_end_date: bookingData.rent_end_date,
+        total_price: result.total_price,
+        status: result.status,
+        vehicle: {
+          vehicle_name: existVehicle.vehicle_name,
+          daily_rent_price: Number(existVehicle.daily_rent_price),
+        },
+        created_at: result.created_at,
+        updated_at: result.updated_at,
       },
-      created_at: result.created_at,
-      updated_at: result.updated_at,
-    },
-  });
-});
+    });
+  }
+);
 const getAllBookings = catchAsync(
   async (req: Request & { user?: IUser }, res: Response) => {
     const loggedInUser = req.user;

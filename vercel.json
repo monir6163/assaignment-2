@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "src/server.ts"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/v1/run-cron-auto-return-bookings",
-      "schedule": "0 0 * * *"
-    }
   ]
 }

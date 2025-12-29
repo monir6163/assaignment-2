@@ -12,15 +12,16 @@ const auth = (...roles: string[]) => {
     next: NextFunction
   ) => {
     try {
-      const token = req.headers.authorization?.split(" ")[1];
+      const token = req.headers.authorization;
+      const accessToken = token?.split(" ")[1];
 
-      if (!token) {
+      if (!accessToken) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "UNAUTHORIZED");
       }
       let verifiedUser;
       try {
         verifiedUser = jwtHelpers.verifyToken(
-          token,
+          accessToken,
           config.jwt.secret_token as Secret
         );
       } catch (error: any) {
