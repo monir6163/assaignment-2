@@ -10,7 +10,16 @@ import { BookingServices } from "./booking.services";
 const createBooking = catchAsync(
   async (req: Request & { user?: IUser }, res: Response) => {
     const bookingData = req.body;
-    console.log(req.user);
+    const loggedInUser = req.user;
+    if (
+      loggedInUser?.id !== bookingData.customer_id &&
+      loggedInUser?.role !== "admin"
+    ) {
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "You can not create a booking for another customer."
+      );
+    }
 
     const startDate = new Date(bookingData.rent_start_date);
     const endDate = new Date(bookingData.rent_end_date);
