@@ -24,11 +24,7 @@ const auth = (...roles: string[]) => {
           config.jwt.secret_token as Secret
         );
       } catch (error: any) {
-        throw new ApiError(
-          StatusCodes.UNAUTHORIZED,
-          "UNAUTHORIZED",
-          error.message
-        );
+        throw new ApiError(StatusCodes.UNAUTHORIZED, error.message);
       }
       if (!verifiedUser) {
         throw new ApiError(StatusCodes.UNAUTHORIZED, "UNAUTHORIZED");
