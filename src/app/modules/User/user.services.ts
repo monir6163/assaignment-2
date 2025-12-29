@@ -42,6 +42,9 @@ const updateUserById = async (userId: number, updateData: Partial<IUser>) => {
   )}, updated_at = NOW() WHERE id = $${index} RETURNING id, name, email, role, phone, created_at, updated_at`;
   values.push(userId);
   const result = await pool.query(queryText, values);
+  if (result.rowCount === 0) {
+    throw new ApiError(404, "User not found");
+  }
   return result.rows[0] as IUser | null;
 };
 
@@ -53,6 +56,9 @@ const deleteUserById = async (userId: number) => {
     throw new ApiError(400, "Cannot delete user with active bookings");
   }
   const result = await pool.query(queryText, [userId]);
+  if (result.rowCount === 0) {
+    throw new ApiError(404, "User not found");
+  }
   return result.rows[0] as IUser | null;
 };
 

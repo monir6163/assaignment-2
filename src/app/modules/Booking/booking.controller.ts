@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
 import calculateTotalPrice from "../../../utils/calculateTotalPrice";
+import ApiError from "../../errors/ApiError";
 import { IUser } from "../User/user.interface";
 import { BookingServices } from "./booking.services";
 
@@ -12,47 +13,34 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
   const startDate = new Date(bookingData.rent_start_date);
   const endDate = new Date(bookingData.rent_end_date);
   if (startDate >= endDate) {
-    sendResponse(res, {
-      statusCode: StatusCodes.BAD_REQUEST,
-      success: false,
-      message:
-        "Invalid date range: rent_start_date must be before rent_end_date.",
-      data: null,
-    });
-    return;
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "Invalid date range: rent_start_date must be before rent_end_date."
+    );
   }
   const existCustomer = await BookingServices.getCustomerById(
     bookingData.customer_id
   );
   if (!existCustomer) {
-    sendResponse(res, {
-      statusCode: StatusCodes.NOT_FOUND,
-      success: false,
-      message: "Customer not found with the provided customer_id.",
-      data: null,
-    });
-    return;
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Customer not found with the provided customer_id."
+    );
   }
   const existVehicle = await BookingServices.getVehicleById(
     bookingData.vehicle_id
   );
   if (!existVehicle) {
-    sendResponse(res, {
-      statusCode: StatusCodes.NOT_FOUND,
-      success: false,
-      message: "Vehicle not found with the provided vehicle_id.",
-      data: null,
-    });
-    return;
+    throw new ApiError(
+      StatusCodes.NOT_FOUND,
+      "Vehicle not found with the provided vehicle_id."
+    );
   }
   if (existVehicle.availability_status !== "available") {
-    sendResponse(res, {
-      statusCode: StatusCodes.BAD_REQUEST,
-      success: false,
-      message: "The selected vehicle is not available for booking.",
-      data: null,
-    });
-    return;
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      "The selected vehicle is not available for booking."
+    );
   }
   const totalPriceCalculation = calculateTotalPrice(
     bookingData.rent_start_date,
@@ -106,12 +94,10 @@ const getAllBookings = catchAsync(
         data: result,
       });
     } else {
-      sendResponse(res, {
-        statusCode: StatusCodes.FORBIDDEN,
-        success: false,
-        message: "You do not have permission to access this resource.",
-        data: null,
-      });
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "You do not have permission to view bookings."
+      );
     }
   }
 );
@@ -122,33 +108,24 @@ const updateBookingStatus = catchAsync(
     const { status } = req.body;
     const getExistingBooking = await BookingServices.getBookingById(bookingId);
     if (!getExistingBooking) {
-      sendResponse(res, {
-        statusCode: StatusCodes.NOT_FOUND,
-        success: false,
-        message: "Booking not found with the provided bookingId.",
-        data: null,
-      });
-      return;
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        "Booking not found with the provided bookingId."
+      );
     }
     if (status === "cancelled" && loggedInUser?.role === "customer") {
       if (getExistingBooking.customer_id !== loggedInUser.id) {
-        sendResponse(res, {
-          statusCode: StatusCodes.FORBIDDEN,
-          success: false,
-          message: "Customer can only cancel their own booking.",
-          data: null,
-        });
-        return;
+        throw new ApiError(
+          StatusCodes.FORBIDDEN,
+          "Customer can only cancel their own booking."
+        );
       }
       const now = new Date();
       if (new Date(getExistingBooking.rent_start_date) <= now) {
-        sendResponse(res, {
-          statusCode: StatusCodes.BAD_REQUEST,
-          success: false,
-          message: "Cannot cancel booking after it has started.",
-          data: null,
-        });
-        return;
+        throw new ApiError(
+          StatusCodes.BAD_REQUEST,
+          "Cannot cancel booking after it has started."
+        );
       }
       const updatedBooking = await BookingServices.updateBookingStatus(
         bookingId,
@@ -199,12 +176,10 @@ const updateBookingStatus = catchAsync(
         },
       });
     } else {
-      sendResponse(res, {
-        statusCode: StatusCodes.FORBIDDEN,
-        success: false,
-        message: "You do not have permission to update this booking status.",
-        data: null,
-      });
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "You do not have permission to update the booking status."
+      );
     }
   }
 );

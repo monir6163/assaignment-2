@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import catchAsync from "../../../shared/catchAsync";
 import sendResponse from "../../../shared/sendResponse";
+import ApiError from "../../errors/ApiError";
 import { IUser } from "./user.interface";
 import { UserServices } from "./user.services";
 
@@ -37,31 +38,25 @@ const updateUserById = catchAsync(
     const updateData = req.body;
     const loggedInUser = req.user as IUser;
     if (loggedInUser?.role !== "admin" && loggedInUser?.id !== userId) {
-      return sendResponse<IUser | null>(res, {
-        statusCode: StatusCodes.FORBIDDEN,
-        success: false,
-        message: "Forbidden! You can only update your own profile.",
-        data: null,
-      });
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "Forbidden! You can only update your own profile."
+      );
     }
     if (loggedInUser.role !== "admin" && "role" in updateData) {
-      return sendResponse(res, {
-        statusCode: StatusCodes.FORBIDDEN,
-        success: false,
-        message: "Forbidden! You cannot update your own role.",
-        data: null,
-      });
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        "Forbidden! You cannot update your own role."
+      );
     }
     if (loggedInUser?.role !== "admin" && req.body.role) {
       delete req.body.role;
     }
     const result = await UserServices.updateUserById(userId, updateData);
     sendResponse<IUser | null>(res, {
-      statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+      statusCode: StatusCodes.OK,
       success: true,
-      message: result
-        ? "User updated successfully"
-        : "User not found with the provided ID",
+      message: "User updated successfully",
       data: result,
     });
   }
@@ -73,9 +68,7 @@ const deleteUserById = catchAsync(async (req: Request, res: Response) => {
   sendResponse<IUser | null>(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: result
-      ? "User deleted successfully"
-      : "User not found with the provided ID",
+    message: "User deleted successfully",
     data: result,
   });
 });
