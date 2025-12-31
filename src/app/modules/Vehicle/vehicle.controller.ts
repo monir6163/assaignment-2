@@ -30,9 +30,9 @@ const getVehicleById = catchAsync(async (req: Request, res: Response) => {
   const vehicleId = Number(req.params.vehicleId);
   const result = await VehicleService.getVehicleById(vehicleId);
   sendResponse<IVehicle | null>(res, {
-    statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+    statusCode: StatusCodes.OK,
     success: true,
-    message: result ? "Vehicle retrieved successfully" : "Vehicle not found",
+    message: "Vehicle retrieved successfully",
     data: result,
   });
 });
@@ -40,9 +40,9 @@ const updateVehicle = catchAsync(async (req: Request, res: Response) => {
   const vehicleId = Number(req.params.vehicleId);
   const result = await VehicleService.updateVehicle(vehicleId, req.body);
   sendResponse<IVehicle | null>(res, {
-    statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+    statusCode: StatusCodes.OK,
     success: true,
-    message: result ? "Vehicle updated successfully" : "Vehicle not found",
+    message: "Vehicle updated successfully",
     data: result,
   });
 });
@@ -50,10 +50,9 @@ const deleteVehicle = catchAsync(async (req: Request, res: Response) => {
   const vehicleId = Number(req.params.vehicleId);
   const result = await VehicleService.deleteVehicle(vehicleId);
   sendResponse<IVehicle | null>(res, {
-    statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
+    statusCode: StatusCodes.OK,
     success: true,
-    message: result ? "Vehicle deleted successfully" : "Vehicle not found",
-    data: result,
+    message: "Vehicle deleted successfully",
   });
 });
 

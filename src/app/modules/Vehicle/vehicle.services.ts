@@ -38,6 +38,9 @@ const getVehicleById = async (vehicleId: number): Promise<IVehicle | null> => {
   const queryText = `SELECT * FROM vehicles WHERE id = $1`;
   const values = [vehicleId];
   const result = await pool.query(queryText, values);
+  if (result.rows.length === 0) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Vehicle not found");
+  }
   return result.rows[0] || null;
 };
 

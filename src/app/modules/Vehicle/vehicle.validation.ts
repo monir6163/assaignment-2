@@ -4,7 +4,7 @@ export const VehicleZodSchema = {
   createVehicleZodSchema: z.object({
     body: z.object({
       vehicle_name: z.string().min(1, "Vehicle name is required"),
-      type: z.string().min(1, "Type is required"),
+      type: z.enum(["car", "bike", "van", "SUV"]),
       registration_number: z.string().min(1, "Registration number is required"),
       daily_rent_price: z
         .number()
@@ -15,7 +15,7 @@ export const VehicleZodSchema = {
   updateVehicleZodSchema: z.object({
     body: z.object({
       vehicle_name: z.string().min(1, "Vehicle name is required").optional(),
-      type: z.string().min(1, "Type is required").optional(),
+      type: z.enum(["car", "bike", "van", "SUV"]).optional(),
       registration_number: z
         .string()
         .min(1, "Registration number is required")

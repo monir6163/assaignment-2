@@ -23,10 +23,10 @@ const createBooking = catchAsync(
 
     const startDate = new Date(bookingData.rent_start_date);
     const endDate = new Date(bookingData.rent_end_date);
-    if (startDate >= endDate) {
+    if (endDate <= startDate) {
       throw new ApiError(
         StatusCodes.BAD_REQUEST,
-        "Invalid date range: rent_start_date must be before rent_end_date."
+        "End date must be after start date"
       );
     }
     const existCustomer = await BookingServices.getCustomerById(
@@ -115,7 +115,7 @@ const getAllBookings = catchAsync(
 );
 const updateBookingStatus = catchAsync(
   async (req: Request & { user?: IUser }, res: Response) => {
-    const loggedInUser = req.user;
+    const loggedInUser = req.user!;
     const bookingId = Number(req.params.bookingId);
     const { status } = req.body;
     const getExistingBooking = await BookingServices.getBookingById(bookingId);
@@ -125,24 +125,36 @@ const updateBookingStatus = catchAsync(
         "Booking not found with the provided bookingId."
       );
     }
-    if (status === "cancelled" && loggedInUser?.role === "customer") {
-      if (getExistingBooking.customer_id !== loggedInUser.id) {
+    if (status === "cancelled") {
+      if (
+        loggedInUser.role !== "admin" &&
+        loggedInUser.id !== getExistingBooking.customer_id
+      ) {
         throw new ApiError(
           StatusCodes.FORBIDDEN,
-          "Customer can only cancel their own booking."
+          "Customer can only cancel their own bookings"
         );
       }
-      const now = new Date();
-      if (new Date(getExistingBooking.rent_start_date) <= now) {
-        throw new ApiError(
-          StatusCodes.BAD_REQUEST,
-          "Cannot cancel booking after it has started."
-        );
+      if (loggedInUser.role !== "admin") {
+        const today = new Date();
+        const startDate = new Date(getExistingBooking.rent_start_date);
+        if (today >= startDate) {
+          throw new ApiError(
+            StatusCodes.BAD_REQUEST,
+            "Cannot cancel booking after start date"
+          );
+        }
       }
       const updatedBooking = await BookingServices.updateBookingStatus(
         bookingId,
-        status
+        "cancelled"
       );
+      if (!updatedBooking) {
+        throw new ApiError(
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Failed to update booking status."
+        );
+      }
       await BookingServices.updateVehicleAvailability(
         getExistingBooking.vehicle_id,
         "available"
@@ -161,19 +173,28 @@ const updateBookingStatus = catchAsync(
           status: updatedBooking.status,
         },
       });
-    } else if (status === "returned" && loggedInUser?.role === "admin") {
+    }
+
+    if (status === "returned") {
+      if (loggedInUser.role !== "admin") {
+        throw new ApiError(
+          StatusCodes.FORBIDDEN,
+          "Only admin can mark bookings as returned."
+        );
+      }
+
       const updatedBooking = await BookingServices.updateBookingStatus(
-        bookingId,
-        status
+        getExistingBooking.id,
+        "returned"
       );
-      await BookingServices.updateVehicleAvailability(
+      const result = await BookingServices.updateVehicleAvailability(
         getExistingBooking.vehicle_id,
         "available"
       );
       sendResponse(res, {
         statusCode: StatusCodes.OK,
         success: true,
-        message: "Booking returned successfully.",
+        message: "Booking marked as returned. Vehicle is now available.",
         data: {
           id: updatedBooking.id,
           customer_id: updatedBooking.customer_id,
@@ -183,16 +204,16 @@ const updateBookingStatus = catchAsync(
           total_price: Number(updatedBooking.total_price),
           status: updatedBooking.status,
           vehicle: {
-            availability_status: updatedBooking.availability_status,
+            availability_status: result.availability_status,
           },
         },
       });
-    } else {
-      throw new ApiError(
-        StatusCodes.FORBIDDEN,
-        "You do not have permission to update the booking status."
-      );
     }
+    return sendResponse(res, {
+      statusCode: StatusCodes.BAD_REQUEST,
+      success: false,
+      message: "Invalid status update request.",
+    });
   }
 );
 

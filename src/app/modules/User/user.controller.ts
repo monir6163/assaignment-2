@@ -17,21 +17,6 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getUserByRegistationNumber = catchAsync(
-  async (req: Request, res: Response) => {
-    const email = req.params.email as string;
-    const result = await UserServices.getUserByRegistationNumber(email);
-    sendResponse<IUser | null>(res, {
-      statusCode: result ? StatusCodes.OK : StatusCodes.NOT_FOUND,
-      success: true,
-      message: result
-        ? "User retrieved successfully"
-        : "User not found with the provided registration number",
-      data: result,
-    });
-  }
-);
-
 const updateUserById = catchAsync(
   async (req: Request & { user?: IUser }, res: Response) => {
     const userId = Number(req.params.userId);
@@ -69,13 +54,11 @@ const deleteUserById = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
     success: true,
     message: "User deleted successfully",
-    data: result,
   });
 });
 
 export const UsersController = {
   getAllUsers,
-  getUserByRegistationNumber,
   updateUserById,
   deleteUserById,
 };

@@ -8,11 +8,6 @@ const getAllUsers = async () => {
   const result = await pool.query(queryText);
   return result.rows as IUser[];
 };
-const getUserByRegistationNumber = async (email: string) => {
-  const queryText = `SELECT id, name, email, role, phone, created_at, updated_at FROM users WHERE email = $1`;
-  const result = await pool.query(queryText, [email]);
-  return result.rows[0] as IUser | null;
-};
 
 const updateUserById = async (userId: number, updateData: Partial<IUser>) => {
   const fields = [];
@@ -64,7 +59,6 @@ const deleteUserById = async (userId: number) => {
 
 export const UserServices = {
   getAllUsers,
-  getUserByRegistationNumber,
   updateUserById,
   deleteUserById,
 };

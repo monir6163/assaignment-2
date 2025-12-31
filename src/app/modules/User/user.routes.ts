@@ -8,11 +8,6 @@ import { UserValidation } from "./user.validation";
 const router = express.Router();
 
 router.get("/", auth(Role.ADMIN), UsersController.getAllUsers);
-router.get(
-  "/:email",
-  auth(Role.ADMIN),
-  UsersController.getUserByRegistationNumber
-);
 router.put(
   "/:userId",
   auth(Role.ADMIN, Role.CUSTOMER),
